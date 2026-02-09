@@ -8,7 +8,7 @@ Antigravity IDE Support for Unity
 via Package Manager (Git URL)
 1. Go to Window > Package Manager.
 2. Click the + icon > Add package from git URL....
-3. Enter the URL of this repository: https://github.com/MRSilius/AntigravityUnity.git
+3. Enter the URL of this repository: ```https://github.com/MRSilius/AntigravityUnity.git```
 
 ## Usage 
 1. Go to Edit > Preferences
