@@ -47,6 +47,11 @@ namespace Antigravity.Ide.Editor
                 var editor = new AntigravityScriptEditor();
                 CodeEditor.Register(editor);
 
+                UnityEditor.PackageManager.Events.registeredPackages += args =>
+                {
+                    EditorApplication.delayCall += editor.SyncAll;
+                };
+
                 if (IsAntigravityInstalled())
                 {
                     string currentEditorPath = CodeEditor.CurrentEditorInstallation;

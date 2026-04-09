@@ -42,7 +42,8 @@ namespace Antigravity.Ide.Editor
 
         internal const string k_WindowsNewline = "\r\n";
 
-        const string m_SolutionProjectEntryTemplate = @"Project(""{{{0}}}"") = ""{1}"", ""{2}"", ""{{{3}}}""{4}EndProject";
+        //const string m_SolutionProjectEntryTemplate = @"Project(""{{{0}}}"") = ""{1}"", ""{2}"", ""{{{3}}}""{4}EndProject";
+        const string m_SolutionProjectEntryTemplate = "Project(\"{{{0}}}\") = \"{1}\", \"{2}\", \"{{{3}}}\"{4}EndProject\r\n";
 
         HashSet<string> _supportedExtensions;
 
@@ -312,13 +313,19 @@ namespace Antigravity.Ide.Editor
         {
             var filename = EscapedRelativePathFor(asset, out var packageInfo);
 
-            builder.Append("    <").Append(tag).Append(@" Include=""").Append(filename);
+            // XML escape the filename
+            var xmlEscapedFilename = XmlEscape(filename);
+
+            builder.Append("    <").Append(tag).Append(@" Include=""").Append(xmlEscapedFilename);
             if (Path.IsPathRooted(filename) && packageInfo != null)
             {
                 var linkPath = SkipPathPrefix(asset.NormalizePathSeparators(), packageInfo.assetPath.NormalizePathSeparators());
 
+                // XML escape the linkPath
+                var xmlEscapedLinkPath = XmlEscape(linkPath);
+
                 builder.Append(@""">").Append(k_WindowsNewline);
-                builder.Append("      <Link>").Append(linkPath).Append("</Link>").Append(k_WindowsNewline);
+                builder.Append("      <Link>").Append(xmlEscapedLinkPath).Append("</Link>").Append(k_WindowsNewline);
                 builder.Append($"    </{tag}>").Append(k_WindowsNewline);
             }
             else
@@ -500,10 +507,14 @@ namespace Antigravity.Ide.Editor
             if (string.IsNullOrEmpty(path))
                 return path;
 
+            // First escape XML special characters
+            path = XmlEscape(path);
+
+            // Then handle % and ; if needed
             path = path.Replace(@"%", "%25");
             path = path.Replace(@";", "%3b");
 
-            return XmlEscape(path);
+            return path;
         }
 
         private static string XmlEscape(string s)
@@ -524,8 +535,12 @@ namespace Antigravity.Ide.Editor
         private void AppendReference(string fullReference, StringBuilder projectBuilder)
         {
             var escapedFullPath = EscapedRelativePathFor(fullReference, out _);
-            projectBuilder.Append(@"    <Reference Include=""").Append(Path.GetFileNameWithoutExtension(escapedFullPath)).Append(@""">").Append(k_WindowsNewline);
-            projectBuilder.Append("      <HintPath>").Append(escapedFullPath).Append("</HintPath>").Append(k_WindowsNewline);
+
+            // XML escape the path
+            var xmlEscapedPath = XmlEscape(escapedFullPath);
+
+            projectBuilder.Append(@"    <Reference Include=""").Append(Path.GetFileNameWithoutExtension(xmlEscapedPath)).Append(@""">").Append(k_WindowsNewline);
+            projectBuilder.Append("      <HintPath>").Append(xmlEscapedPath).Append("</HintPath>").Append(k_WindowsNewline);
             projectBuilder.Append("      <Private>False</Private>").Append(k_WindowsNewline);
             projectBuilder.Append("    </Reference>").Append(k_WindowsNewline);
         }
